@@ -2,14 +2,15 @@ module.exports = {
   apps: [
     {
       name: 'config-server',
-      script: 'java',
+      script: '/usr/bin/java',
       args: '-jar config-server.jar',
       cwd: '/opt/bookstore',
+      interpreter: 'none',
       instances: '1',
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
-        CONFIG_ENCRYPT_KEY: '${CONFIG_ENCRYPT_KEY}',
+        CONFIG_ENCRYPT_KEY: 'changeme-local-dev-key',
         EUREKA_URL: 'http://localhost:8761/eureka'
       },
       error_file: '/var/log/pm2/config-server-error.log',
@@ -19,9 +20,10 @@ module.exports = {
     },
     {
       name: 'eureka-server',
-      script: 'java',
+      script: '/usr/bin/java',
       args: '-jar eureka-server.jar',
       cwd: '/opt/bookstore',
+      interpreter: 'none',
       instances: '1',
       exec_mode: 'fork',
       env: {
@@ -35,9 +37,10 @@ module.exports = {
     },
     {
       name: 'api-gateway',
-      script: 'java',
+      script: '/usr/bin/java',
       args: '-jar api-gateway.jar',
       cwd: '/opt/bookstore',
+      interpreter: 'none',
       instances: '1',
       exec_mode: 'fork',
       env: {
@@ -54,18 +57,19 @@ module.exports = {
     },
     {
       name: 'user-service',
-      script: 'java',
+      script: '/usr/bin/java',
       args: '-jar user-service.jar',
       cwd: '/opt/bookstore',
+      interpreter: 'none',
       instances: '1',
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
         EUREKA_URL: 'http://localhost:8761/eureka',
-        MYSQL_HOST: '${MYSQL_HOST}',
+        MYSQL_HOST: '10.176.0.3',
         MYSQL_PORT: '3306',
-        MYSQL_USERNAME: '${MYSQL_USERNAME}',
-        MYSQL_PASSWORD: '${MYSQL_PASSWORD}',
+        MYSQL_USERNAME: 'bookstore_app',
+        MYSQL_PASSWORD: 'YourStrongPassword123!',
         MYSQL_USER_DB: 'userdb'
       },
       error_file: '/var/log/pm2/user-service-error.log',
@@ -75,18 +79,17 @@ module.exports = {
     },
     {
       name: 'book-service',
-      script: 'java',
+      script: '/usr/bin/java',
       args: '-jar book-service.jar',
       cwd: '/opt/bookstore',
+      interpreter: 'none',
       instances: '1',
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
         EUREKA_URL: 'http://localhost:8761/eureka',
-        MONGODB_URI: '${MONGODB_URI}',
-        GCS_BUCKET_NAME: '${GCS_BUCKET_NAME}',
-        GCP_PROJECT_ID: '${GCP_PROJECT_ID}',
-        GOOGLE_APPLICATION_CREDENTIALS: '${GOOGLE_APPLICATION_CREDENTIALS}'
+        MONGODB_URI: 'mongodb+srv://kasunlakshan3368:OlBYdcOQtTCCpwrV@cluster0webap.ssiwmke.mongodb.net/bookdb?retryWrites=true&w=majority&appName=Cluster0webap',
+        GCS_BUCKET_NAME: 'bookstore-covers-bucket'
       },
       error_file: '/var/log/pm2/book-service-error.log',
       out_file: '/var/log/pm2/book-service-out.log',
@@ -95,21 +98,20 @@ module.exports = {
     },
     {
       name: 'order-service',
-      script: 'java',
+      script: '/usr/bin/java',
       args: '-jar order-service.jar',
       cwd: '/opt/bookstore',
+      interpreter: 'none',
       instances: '1',
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
         EUREKA_URL: 'http://localhost:8761/eureka',
-        MYSQL_HOST: '${MYSQL_HOST}',
+        MYSQL_HOST: '10.176.0.3',
         MYSQL_PORT: '3306',
-        MYSQL_USERNAME: '${MYSQL_USERNAME}',
-        MYSQL_PASSWORD: '${MYSQL_PASSWORD}',
-        MYSQL_ORDER_DB: 'orderdb',
-        GCP_PROJECT_ID: '${GCP_PROJECT_ID}',
-        GOOGLE_APPLICATION_CREDENTIALS: '${GOOGLE_APPLICATION_CREDENTIALS}'
+        MYSQL_USERNAME: 'bookstore_app',
+        MYSQL_PASSWORD: 'YourStrongPassword123!',
+        MYSQL_ORDER_DB: 'orderdb'
       },
       error_file: '/var/log/pm2/order-service-error.log',
       out_file: '/var/log/pm2/order-service-out.log',
