@@ -1,0 +1,92 @@
+name: Build and Deploy Backend Services
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build user-service
+        run: |
+          cd user-service
+          mvn clean package -DskipTests
+          mkdir -p ../build-artifacts
+          cp target/user-service-*.jar ../build-artifacts/user-service.jar
+
+      - name: Build book-service
+        run: |
+          cd book-service
+          mvn clean package -DskipTests
+          cp target/book-service-*.jar ../build-artifacts/book-service.jar
+
+      - name: Build order-service
+        run: |
+          cd order-service
+          mvn clean package -DskipTests
+          cp target/order-service-*.jar ../build-artifacts/order-service.jar
+
+      - name: Copy ecosystem config
+        run: |
+          cp deploy/startup-scripts/ecosystem.config.js build-artifacts/
+
+      - name: Authenticate to Google Cloud
+        id: 'auth'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/bookstore-ashen/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'bookstore-deployer-sa@bookstore-ashen.iam.gserviceaccount.com'
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: 'bookstore-ashen'
+
+      - name: Upload artifacts to Google Cloud Storage
+        run: |
+          gsutil cp -r build-artifacts/* gs://bookstore-artifacts/
+          echo "Artifacts uploaded to gs://bookstore-artifacts/"
+
+      - name: Trigger VM rolling restart
+        run: |
+          # Get the instance group URL
+          MIG_URL=$(gcloud compute instance-groups managed describe bookstore-service-mig \
+            --zone=${{ secrets.GCP_ZONE }} \
+            --format="value(instanceGroup)")
+
+          # Perform a rolling restart
+          gcloud compute instance-groups managed rolling-action restart bookstore-service-mig \
+            --zone=${{ secrets.GCP_ZONE }} \
+            --max-surge=1 \
+            --max-unavailable=0 \
+            --type=PROACTIVE \
+            --most-recent=true
+
+          echo "Rolling restart initiated for service MIG"
