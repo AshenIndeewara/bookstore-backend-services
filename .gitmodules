@@ -1,0 +1,9 @@
+[submodule "user-service"]
+	path = user-service
+	url = https://github.com/AshenIndeewara/bookstore-user-service
+[submodule "book-service"]
+	path = book-service
+	url = https://github.com/AshenIndeewara/bookstore-book-service
+[submodule "order-service"]
+	path = order-service
+	url = https://github.com/AshenIndeewara/bookstore-order-service
