@@ -85,6 +85,6 @@ jobs:
           # Perform a rolling restart
           gcloud compute instance-groups managed rolling-action restart bookstore-service-mig \
             --zone=${{ secrets.GCP_ZONE }} \
-            --max-unavailable=0
+            --max-unavailable=1
 
           echo "Rolling restart initiated for service MIG"
